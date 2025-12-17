@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { usePoints } from '../context/PointContext';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 
 export default function RewardShop() {
     const { totalPoints, subtractPoints } = usePoints();
+    const { user } = useAuth();
     const [rewards, setRewards] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('전체');
     const [selectedReward, setSelectedReward] = useState(null);
@@ -27,8 +29,10 @@ export default function RewardShop() {
     // 보상 상품 목록 불러오기
     useEffect(() => {
         fetchRewards();
-        fetchExchangeHistory();
-    }, []);
+        if (user?.member_id) {
+            fetchExchangeHistory();
+        }
+    }, [user]);
 
     const fetchRewards = async () => {
         try {
@@ -46,10 +50,9 @@ export default function RewardShop() {
 
     const fetchExchangeHistory = async () => {
         try {
-            const memberId = localStorage.getItem('member_id');
-            if (!memberId) return;
+            if (!user?.member_id) return;
 
-            const response = await fetch(`${API_BASE_URL}/api/rewards/exchanges/${memberId}`);
+            const response = await fetch(`${API_BASE_URL}/api/rewards/exchanges/${user.member_id}`);
             if (!response.ok) throw new Error('교환 내역을 불러오는데 실패했습니다');
             const data = await response.json();
             setExchangeHistory(data);
@@ -89,8 +92,7 @@ export default function RewardShop() {
     const handleExchange = async () => {
         if (!selectedReward) return;
 
-        const memberId = localStorage.getItem('member_id');
-        if (!memberId) {
+        if (!user?.member_id) {
             toast.error('로그인이 필요합니다');
             return;
         }
@@ -102,7 +104,7 @@ export default function RewardShop() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    member_id: parseInt(memberId),
+                    member_id: user.member_id,
                     reward_id: selectedReward.reward_id
                 })
             });
@@ -158,8 +160,8 @@ export default function RewardShop() {
                         <button
                             onClick={() => setShowHistoryModal(true)}
                             className={`px-4 py-2 rounded-lg font-semibold transition-colors ${isDark
-                                    ? 'bg-gray-700 text-white hover:bg-gray-600'
-                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                ? 'bg-gray-700 text-white hover:bg-gray-600'
+                                : 'bg-gray-700 text-white hover:bg-gray-600'
                                 }`}
                         >
                             교환 내역
@@ -169,8 +171,8 @@ export default function RewardShop() {
                         <button
                             onClick={() => setIsDark(!isDark)}
                             className={`px-4 py-2 rounded-lg font-semibold transition-colors ${isDark
-                                    ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-400'
-                                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                                ? 'bg-yellow-500 text-gray-900 hover:bg-yellow-400'
+                                : 'bg-gray-700 text-white hover:bg-gray-600'
                                 }`}
                         >
                             {isDark ? '☀️ 라이트 모드' : '🌙 다크 모드'}
@@ -227,7 +229,9 @@ export default function RewardShop() {
                                 )}
 
                                 {/* 아이콘 */}
-                                <div className="text-6xl mb-4 text-center">{reward.icon}</div>
+                                <div className="text-6xl mb-4 text-center">
+                                    {reward.icon || '🎁'}
+                                </div>
 
                                 {/* 상품명 */}
                                 <h3 className="text-xl font-bold mb-2 text-center">{reward.reward_name}</h3>
@@ -294,7 +298,7 @@ export default function RewardShop() {
                             }`}
                     >
                         <div className="text-center">
-                            <div className="text-7xl mb-4">{selectedReward.icon}</div>
+                            <div className="text-7xl mb-4">{selectedReward.icon || '🎁'}</div>
                             <h2 className="text-2xl font-bold mb-2">{selectedReward.reward_name}</h2>
                             <p className={`mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                                 {selectedReward.description}
@@ -389,7 +393,7 @@ export default function RewardShop() {
                                             }`}
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="text-4xl">{exchange.icon}</div>
+                                            <div className="text-4xl">{exchange.icon || '🎁'}</div>
                                             <div className="flex-1">
                                                 <div className="font-bold text-lg">{exchange.reward_name}</div>
                                                 <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
