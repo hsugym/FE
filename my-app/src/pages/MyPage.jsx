@@ -604,9 +604,35 @@ export default function MyPage() {
         setAttendances([]);
       }
 
-      // 나머지는 더미 데이터 사용 (나의 요약용)
-      setExerciseLogs(DUMMY_EXERCISE_LOGS);
-      setDietLogs(DUMMY_DIET_LOGS);
+      // 서버에서 운동 기록 가져오기
+      try {
+        const exerciseResponse = await fetch(getApiUrl(`/api/exercises/logs/${user.member_id}`));
+        if (exerciseResponse.ok) {
+          const exerciseData = await exerciseResponse.json();
+          setExerciseLogs(exerciseData);
+        } else {
+          setExerciseLogs([]);
+        }
+      } catch (error) {
+        console.error('운동 기록 로드 실패:', error);
+        setExerciseLogs([]);
+      }
+
+      // 서버에서 식단 기록 가져오기
+      try {
+        const dietResponse = await fetch(getApiUrl(`/api/diet/logs/${user.member_id}`));
+        if (dietResponse.ok) {
+          const dietData = await dietResponse.json();
+          setDietLogs(dietData);
+        } else {
+          setDietLogs([]);
+        }
+      } catch (error) {
+        console.error('식단 기록 로드 실패:', error);
+        setDietLogs([]);
+      }
+
+      // 나머지는 더미 데이터 사용
       setHealthRecords(DUMMY_HEALTH_RECORDS);
       setPointHistory(DUMMY_POINT_HISTORY);
       setPointExchanges(DUMMY_POINT_EXCHANGES);
@@ -654,7 +680,8 @@ export default function MyPage() {
 
       setShowAddRecordModal(false);
 
-      // 데이터 새로고침은 나중에 구현 (현재는 더미 데이터 사용 중)
+      // 데이터 새로고침
+      await loadAllData();
     } catch (error) {
       console.error('운동 기록 추가 실패:', error);
       toast.error('운동 기록 추가에 실패했습니다.', {
@@ -692,7 +719,8 @@ export default function MyPage() {
 
       setShowAddRecordModal(false);
 
-      // 데이터 새로고침은 나중에 구현 (현재는 더미 데이터 사용 중)
+      // 데이터 새로고침
+      await loadAllData();
     } catch (error) {
       console.error('식단 기록 추가 실패:', error);
       toast.error('식단 기록 추가에 실패했습니다.', {
