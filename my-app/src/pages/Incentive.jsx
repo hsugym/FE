@@ -29,14 +29,14 @@ function IncentivePage() {
         }
     }, [user]);
 
-    // 주기적으로 퀘스트와 포인트 새로고침 (5초마다)
+    // 주기적으로 퀘스트와 포인트 새로고침 (3초마다)
     useEffect(() => {
         if (!user) return;
 
         const interval = setInterval(() => {
             loadQuests();
             loadUserPoints();
-        }, 5000);
+        }, 3000);
 
         return () => clearInterval(interval);
     }, [user]);
