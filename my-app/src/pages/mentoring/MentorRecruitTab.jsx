@@ -22,6 +22,7 @@ export default function MentorRecruitTab({ userId, userName, darkMode }) {
   // 모집글 등록
   const handleSubmit = () => {
     if (myMentorPost) return alert("이미 등록된 모집글이 있습니다.");
+    if (myMenteePost) return alert("멘티 모집글을 작성한 사용자는 멘토 모집글을 작성할 수 없습니다.");
     if (!title || !desc) return alert("제목과 소개를 입력해주세요.");
 
     addMentor({

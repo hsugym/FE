@@ -148,7 +148,7 @@ export function MatchProvider({ children }) {
     }
   };
 
-  // ✅ 매칭 요청 (mentorUserId, menteeUserId를 받음)
+  // ✅ 매칭 요청 (멘티가 멘토에게 신청)
   const requestMatch = (mentorUserId, menteeUserId, applicantName) => {
     // userId로 멘토/멘티 찾기
     const mentor = mentors.find((m) => m.userId === mentorUserId);
@@ -156,8 +156,13 @@ export function MatchProvider({ children }) {
 
     console.log("🔍 requestMatch 호출:", { mentorUserId, menteeUserId, mentor, mentee });
 
-    if (!mentor || !mentee) {
-      toast.error("멘토 또는 멘티 정보를 찾을 수 없습니다.");
+    if (!mentor) {
+      toast.error("멘토 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    if (!mentee) {
+      toast.error("멘티 모집글을 먼저 작성해주세요.");
       return;
     }
 
@@ -174,7 +179,7 @@ export function MatchProvider({ children }) {
       menteeId: mentee.id, // post_id (ApplicationsTab에서 사용)
       mentorName: mentor.userName || "익명 멘토",
       menteeName: mentee.userName || "익명 멘티",
-      status: "pending", // 대기중 상태로 변경
+      status: "pending", // 대기중 상태
     };
 
     console.log("✅ 생성된 매칭:", newMatch);
@@ -182,11 +187,11 @@ export function MatchProvider({ children }) {
     setMatches((prev) => {
       const updated = [...prev, newMatch];
       console.log("📦 전체 매칭 목록:", updated);
-      localStorage.setItem("matches", JSON.stringify(updated)); // 즉시 저장
+      localStorage.setItem("matches", JSON.stringify(updated));
       return updated;
     });
 
-    toast.success("멘토링 신청이 완료되었습니다!");
+    toast.success("멘토에게 신청이 완료되었습니다!");
   };
 
   // ✅ 매칭 수락 (멘토/멘티 모두 사용)

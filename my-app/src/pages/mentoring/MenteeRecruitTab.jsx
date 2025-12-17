@@ -22,6 +22,7 @@ export default function MenteeRecruitTab({ userId, userName, darkMode }) {
   // 글 등록
   const handleSubmit = () => {
     if (myMenteePost) return alert("이미 등록된 모집글이 있습니다.");
+    if (myMentorPost) return alert("멘토 모집글을 작성한 사용자는 멘티 모집글을 작성할 수 없습니다.");
     if (!title || !desc) return alert("제목과 소개를 입력해주세요.");
 
     addMentee({
@@ -151,16 +152,6 @@ export default function MenteeRecruitTab({ userId, userName, darkMode }) {
                 <p className="text-sm mb-3">
                   <span className="font-semibold">연락처:</span> {mentee.mentee_contact}
                 </p>
-              )}
-
-              {/* 신청하기 버튼 - 멘토 글을 쓴 사람만 표시 */}
-              {myMentorPost && (
-                <button
-                  onClick={() => requestMatch(myMentorPost.userId, mentee.userId, userName)}
-                  className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 mt-2"
-                >
-                  신청하기
-                </button>
               )}
             </div>
           ))}
