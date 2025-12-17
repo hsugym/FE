@@ -43,9 +43,8 @@ export default function MenteeRecruitTab({ userId, userName, darkMode }) {
 
   return (
     <div
-      className={`p-6 rounded-lg shadow-xl transition-colors duration-300 max-w-6xl mx-auto ${
-        darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-      }`}
+      className={`p-6 rounded-lg shadow-xl transition-colors duration-300 max-w-6xl mx-auto ${darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+        }`}
     >
       <h3 className="text-2xl font-bold text-center mb-6">멘티</h3>
 
@@ -57,44 +56,39 @@ export default function MenteeRecruitTab({ userId, userName, darkMode }) {
             placeholder="제목을 입력하세요"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className={`border p-2 rounded w-full ${
-              darkMode ? "text-black bg-gray-100" : "text-black"
-            }`}
+            className={`border p-2 rounded w-full ${darkMode ? "text-black bg-gray-100" : "text-black"
+              }`}
           />
           <textarea
             placeholder="멘토에게 전달하고 싶은 내용이나 목표를 적어보세요"
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
-            className={`border p-2 rounded w-full h-32 resize-none ${
-              darkMode ? "text-black bg-gray-100" : "text-black"
-            }`}
+            className={`border p-2 rounded w-full h-32 resize-none ${darkMode ? "text-black bg-gray-100" : "text-black"
+              }`}
           />
           <input
             type="text"
             placeholder="목표 (예: 체지방 감량 및 식단관리 배우기)"
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
-            className={`border p-2 rounded w-full ${
-              darkMode ? "text-black bg-gray-100" : "text-black"
-            }`}
+            className={`border p-2 rounded w-full ${darkMode ? "text-black bg-gray-100" : "text-black"
+              }`}
           />
           <input
             type="text"
             placeholder="관심사 (예: PT 입문 / 식단 루틴 설계)"
             value={interest}
             onChange={(e) => setInterest(e.target.value)}
-            className={`border p-2 rounded w-full ${
-              darkMode ? "text-black bg-gray-100" : "text-black"
-            }`}
+            className={`border p-2 rounded w-full ${darkMode ? "text-black bg-gray-100" : "text-black"
+              }`}
           />
           <input
             type="text"
             placeholder="연락처 (예: mentee@hsu.ac.kr)"
             value={menteeContact}
             onChange={(e) => setMenteeContact(e.target.value)}
-            className={`border p-2 rounded w-full ${
-              darkMode ? "text-black bg-gray-100" : "text-black"
-            }`}
+            className={`border p-2 rounded w-full ${darkMode ? "text-black bg-gray-100" : "text-black"
+              }`}
           />
           <button
             onClick={handleSubmit}
@@ -136,9 +130,8 @@ export default function MenteeRecruitTab({ userId, userName, darkMode }) {
           {mentees.filter(mentee => mentee.userId !== userId).map((mentee) => (
             <div
               key={mentee.id}
-              className={`rounded-lg shadow-md p-5 ${
-                darkMode ? "bg-gray-700" : "bg-gray-100"
-              }`}
+              className={`rounded-lg shadow-md p-5 ${darkMode ? "bg-gray-700" : "bg-gray-100"
+                }`}
             >
               <h5 className="font-bold text-xl mb-2">{mentee.title}</h5>
               <p className="text-sm text-gray-400 mb-1">작성자: {mentee.userName}</p>
@@ -163,7 +156,7 @@ export default function MenteeRecruitTab({ userId, userName, darkMode }) {
               {/* 신청하기 버튼 - 멘토 글을 쓴 사람만 표시 */}
               {myMentorPost && (
                 <button
-                  onClick={() => requestMatch(myMentorPost.id, mentee.id, userName)}
+                  onClick={() => requestMatch(myMentorPost.userId, mentee.userId, userName)}
                   className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 mt-2"
                 >
                   신청하기

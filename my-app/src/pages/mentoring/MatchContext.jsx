@@ -148,12 +148,13 @@ export function MatchProvider({ children }) {
     }
   };
 
-  // ✅ 매칭 요청
-  const requestMatch = (mentorId, menteeId, menteeName) => {
-    const mentor = mentors.find((m) => m.id === mentorId);
-    const mentee = mentees.find((m) => m.id === menteeId);
+  // ✅ 매칭 요청 (mentorUserId, menteeUserId를 받음)
+  const requestMatch = (mentorUserId, menteeUserId, applicantName) => {
+    // userId로 멘토/멘티 찾기
+    const mentor = mentors.find((m) => m.userId === mentorUserId);
+    const mentee = mentees.find((m) => m.userId === menteeUserId);
 
-    console.log("🔍 requestMatch 호출:", { mentorId, menteeId, mentor, mentee });
+    console.log("🔍 requestMatch 호출:", { mentorUserId, menteeUserId, mentor, mentee });
 
     if (!mentor || !mentee) {
       toast.error("멘토 또는 멘티 정보를 찾을 수 없습니다.");
@@ -161,14 +162,16 @@ export function MatchProvider({ children }) {
     }
 
     // 이미 매칭 존재?
-    if (matches.some((m) => m.mentorId === mentorId && m.menteeId === menteeId)) {
+    if (matches.some((m) => m.mentorUserId === mentorUserId && m.menteeUserId === menteeUserId)) {
       toast.error("이미 신청했거나 매칭된 상태입니다.");
       return;
     }
 
     const newMatch = {
-      mentorId,
-      menteeId,
+      mentorUserId,
+      menteeUserId,
+      mentorId: mentor.id, // post_id (ApplicationsTab에서 사용)
+      menteeId: mentee.id, // post_id (ApplicationsTab에서 사용)
       mentorName: mentor.userName || "익명 멘토",
       menteeName: mentee.userName || "익명 멘티",
       status: "pending", // 대기중 상태로 변경

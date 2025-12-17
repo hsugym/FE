@@ -43,9 +43,8 @@ export default function MentorRecruitTab({ userId, userName, darkMode }) {
 
   return (
     <div
-      className={`p-6 rounded-lg shadow-xl transition-colors duration-300 max-w-6xl mx-auto ${
-        darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-      }`}
+      className={`p-6 rounded-lg shadow-xl transition-colors duration-300 max-w-6xl mx-auto ${darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+        }`}
     >
       <h3 className="text-2xl font-bold text-center mb-6">멘토</h3>
 
@@ -126,9 +125,8 @@ export default function MentorRecruitTab({ userId, userName, darkMode }) {
           {mentors.filter(mentor => mentor.userId !== userId).map((mentor) => (
             <div
               key={mentor.id}
-              className={`rounded-lg shadow-md p-5 ${
-                darkMode ? "bg-gray-700" : "bg-gray-100"
-              }`}
+              className={`rounded-lg shadow-md p-5 ${darkMode ? "bg-gray-700" : "bg-gray-100"
+                }`}
             >
               <h5 className="font-bold text-xl mb-2">{mentor.title}</h5>
               <p className="text-sm text-gray-400 mb-1">작성자: {mentor.userName}</p>
@@ -153,7 +151,7 @@ export default function MentorRecruitTab({ userId, userName, darkMode }) {
               {/* 신청하기 버튼 - 멘티 글을 쓴 사람만 표시 */}
               {myMenteePost && (
                 <button
-                  onClick={() => requestMatch(mentor.id, myMenteePost.id, userName)}
+                  onClick={() => requestMatch(mentor.userId, myMenteePost.userId, userName)}
                   className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 mt-2"
                 >
                   신청하기
