@@ -25,28 +25,26 @@ export default function Mentoring() {
 
   // ✅ matches 변경 시 profile 탭 자동 업데이트
   useEffect(() => {
-  if (tab === "profile") {
-    setTab("profile");
-  }
-}, [matches, tab]); // tab 추가
+    if (tab === "profile") {
+      setTab("profile");
+    }
+  }, [matches, tab]); // tab 추가
 
 
   return (
     <div
-      className={`min-h-screen p-8 transition-colors duration-300 ${
-        darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}
+      className={`min-h-screen p-8 transition-colors duration-300 ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+        }`}
     >
       {/* 상단 헤더 */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold">멘토링 신청</h2>
         <button
           onClick={() => setDarkMode(!darkMode)}
-          className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-            darkMode
+          className={`px-4 py-2 rounded-lg font-semibold transition-colors ${darkMode
               ? "bg-yellow-500 text-gray-900 hover:bg-yellow-400"
               : "bg-gray-700 text-white hover:bg-gray-600"
-          }`}
+            }`}
         >
           {darkMode ? "☀️ 라이트 모드" : "🌙 다크 모드"}
         </button>
@@ -77,13 +75,12 @@ function TabButton({ tab, setTab, current, text, darkMode }) {
   return (
     <button
       onClick={() => setTab(current)}
-      className={`px-4 py-2 rounded-md font-semibold ${
-        active
+      className={`px-4 py-2 rounded-md font-semibold ${active
           ? "bg-blue-600 text-white"
           : darkMode
-          ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
-          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-      }`}
+            ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
     >
       {text}
     </button>
@@ -100,22 +97,22 @@ function MentorMenteeProfile({ darkMode, userId }) {
   const myMentorPost = mentors.find((m) => m.userId === userId);
   const myMenteePost = mentees.find((m) => m.userId === userId);
 
-  // 매칭 관계
+  // 매칭 관계 (userId 기반으로 찾기)
   const myMentorMatch = matches.find(
-    (m) => myMenteePost && m.menteeId === myMenteePost.id && m.status === "active"
+    (m) => m.menteeUserId === userId && m.status === "active"
   );
   const myMenteeMatch = matches.find(
-    (m) => myMentorPost && m.mentorId === myMentorPost.id && m.status === "active"
+    (m) => m.mentorUserId === userId && m.status === "active"
   );
 
-  // 매칭된 멘토의 게시글 찾기
+  // 매칭된 멘토의 게시글 찾기 (userId로 찾기)
   const matchedMentorPost = myMentorMatch
-    ? mentors.find(m => m.id === myMentorMatch.mentorId)
+    ? mentors.find(m => m.userId === myMentorMatch.mentorUserId)
     : null;
 
-  // 매칭된 멘티의 게시글 찾기
+  // 매칭된 멘티의 게시글 찾기 (userId로 찾기)
   const matchedMenteePost = myMenteeMatch
-    ? mentees.find(m => m.id === myMenteeMatch.menteeId)
+    ? mentees.find(m => m.userId === myMenteeMatch.menteeUserId)
     : null;
 
   // 멘토 정보 로직
@@ -124,20 +121,20 @@ function MentorMenteeProfile({ darkMode, userId }) {
   // 3. 둘 다 아니면 → "매칭된 멘토 없음"
   const mentorData = myMenteePost && matchedMentorPost
     ? {
-        name: matchedMentorPost.userName,
-        career: matchedMentorPost.career || "-",
-        specialty: matchedMentorPost.specialty || "-",
-        contact: matchedMentorPost.mentor_contact || "-",
-        image: mentorImg,
-        isMe: false,
-      }
+      name: matchedMentorPost.userName,
+      career: matchedMentorPost.career || "-",
+      specialty: matchedMentorPost.specialty || "-",
+      contact: matchedMentorPost.mentor_contact || "-",
+      image: mentorImg,
+      isMe: false,
+    }
     : myMentorPost
-    ? {
+      ? {
         name: myMentorPost.userName,
         image: mentorImg,
         isMe: true,
       }
-    : {
+      : {
         name: "매칭된 멘토 없음",
         career: "-",
         specialty: "-",
@@ -152,20 +149,20 @@ function MentorMenteeProfile({ darkMode, userId }) {
   // 3. 둘 다 아니면 → "매칭된 멘티 없음"
   const menteeData = myMentorPost && matchedMenteePost
     ? {
-        name: matchedMenteePost.userName,
-        goal: matchedMenteePost.goal || "-",
-        interest: matchedMenteePost.interest || "-",
-        contact: matchedMenteePost.mentee_contact || "-",
-        image: menteeImg,
-        isMe: false,
-      }
+      name: matchedMenteePost.userName,
+      goal: matchedMenteePost.goal || "-",
+      interest: matchedMenteePost.interest || "-",
+      contact: matchedMenteePost.mentee_contact || "-",
+      image: menteeImg,
+      isMe: false,
+    }
     : myMenteePost
-    ? {
+      ? {
         name: myMenteePost.userName,
         image: menteeImg,
         isMe: true,
       }
-    : {
+      : {
         name: "매칭된 멘티 없음",
         goal: "-",
         interest: "-",
@@ -215,9 +212,8 @@ function ProfileCard({ title, data, onView, darkMode }) {
       onClick={onView}
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.97 }}
-      className={`w-full md:w-1/3 cursor-pointer rounded-lg overflow-hidden shadow-xl transition ${
-        darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-      }`}
+      className={`w-full md:w-1/3 cursor-pointer rounded-lg overflow-hidden shadow-xl transition ${darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+        }`}
     >
       <img src={data.image} alt={title} className="w-full h-64 object-cover" />
       <div className="p-6">
@@ -252,9 +248,8 @@ function ProfileModal({ data, onClose, darkMode }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
           transition={{ duration: 0.25 }}
-          className={`w-96 rounded-lg shadow-2xl p-6 relative ${
-            darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
-          }`}
+          className={`w-96 rounded-lg shadow-2xl p-6 relative ${darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+            }`}
         >
           <button
             onClick={onClose}
