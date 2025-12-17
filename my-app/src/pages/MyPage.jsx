@@ -681,6 +681,10 @@ export default function MyPage() {
   // 운동 기록 추가
   const addExerciseLog = async (exerciseId, duration) => {
     try {
+      if (!currentUser || !currentUser.member_id) {
+        throw new Error('사용자 정보를 찾을 수 없습니다.');
+      }
+
       // 서버에 운동 기록 추가 요청
       const response = await fetch(getApiUrl('/api/exercises/logs'), {
         method: 'POST',
@@ -691,12 +695,13 @@ export default function MyPage() {
           member_id: currentUser.member_id,
           exercise_id: exerciseId,
           duration_minutes: duration,
-          performed_at: new Date()
+          performed_at: new Date().toISOString()
         })
       });
 
       if (!response.ok) {
-        throw new Error('운동 기록 추가 실패');
+        const errorData = await response.json();
+        throw new Error(errorData.error || '운동 기록 추가 실패');
       }
 
       toast.success('운동 기록이 추가되었습니다!', {
@@ -710,7 +715,7 @@ export default function MyPage() {
       await loadAllData();
     } catch (error) {
       console.error('운동 기록 추가 실패:', error);
-      toast.error('운동 기록 추가에 실패했습니다.', {
+      toast.error(error.message || '운동 기록 추가에 실패했습니다.', {
         icon: '❌',
         duration: 3000
       });
@@ -720,6 +725,10 @@ export default function MyPage() {
   // 식단 기록 추가
   const addDietLog = async (foodId, mealType) => {
     try {
+      if (!currentUser || !currentUser.member_id) {
+        throw new Error('사용자 정보를 찾을 수 없습니다.');
+      }
+
       // 서버에 식단 기록 추가 요청
       const response = await fetch(getApiUrl('/api/diet/logs'), {
         method: 'POST',
@@ -730,12 +739,13 @@ export default function MyPage() {
           member_id: currentUser.member_id,
           food_id: foodId,
           meal_type: mealType,
-          ate_at: new Date()
+          ate_at: new Date().toISOString()
         })
       });
 
       if (!response.ok) {
-        throw new Error('식단 기록 추가 실패');
+        const errorData = await response.json();
+        throw new Error(errorData.error || '식단 기록 추가 실패');
       }
 
       toast.success('식단 기록이 추가되었습니다!', {
@@ -749,7 +759,7 @@ export default function MyPage() {
       await loadAllData();
     } catch (error) {
       console.error('식단 기록 추가 실패:', error);
-      toast.error('식단 기록 추가에 실패했습니다.', {
+      toast.error(error.message || '식단 기록 추가에 실패했습니다.', {
         icon: '❌',
         duration: 3000
       });
