@@ -38,6 +38,17 @@ export const PointProvider = ({ children }) => {
         }
     }, [user?.member_id]);
 
+    // 주기적으로 포인트 새로고침 (10초마다)
+    useEffect(() => {
+        if (!user?.member_id) return;
+
+        const interval = setInterval(() => {
+            fetchUserPoints();
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [user?.member_id]);
+
     const fetchUserPoints = async () => {
         if (!user?.member_id) return;
 
