@@ -4,8 +4,8 @@ export default function PostCard({ post, onLike, onDelete, darkMode, userId, isL
   return (
     <div
       className={`p-6 rounded-lg shadow hover:shadow-lg transition ${darkMode
-          ? "bg-gray-800 text-white"
-          : "bg-white text-gray-900 border border-gray-200"
+        ? "bg-gray-800 text-white"
+        : "bg-white text-gray-900 border border-gray-200"
         }`}
     >
       {/* 헤더 */}
@@ -32,16 +32,22 @@ export default function PostCard({ post, onLike, onDelete, darkMode, userId, isL
           </div>
         </div>
 
-        {/* 좋아요 버튼을 상단으로 이동 */}
-        <button
-          onClick={onLike}
-          className={`px-4 py-2 rounded-md transition whitespace-nowrap ml-4 ${isLiked
+        {/* 공식 게시글: 고정핀, 사용자 게시글: 좋아요 버튼 */}
+        {post.isOfficial ? (
+          <div className="px-4 py-2 ml-4">
+            <span className="text-3xl">📌</span>
+          </div>
+        ) : (
+          <button
+            onClick={onLike}
+            className={`px-4 py-2 rounded-md transition whitespace-nowrap ml-4 ${isLiked
               ? "bg-pink-600 text-white"
               : "bg-pink-500 text-white hover:bg-pink-600"
-            }`}
-        >
-          {isLiked ? "❤️ " + (post.likes || 0) : `❤️ ${post.likes || 0}`}
-        </button>
+              }`}
+          >
+            {isLiked ? "❤️ " + (post.likes || 0) : `❤️ ${post.likes || 0}`}
+          </button>
+        )}
       </div>
 
       {/* 설명 */}
