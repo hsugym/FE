@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { getApiUrl } from '../config/api';
 import toast from 'react-hot-toast';
 
 const PointContext = createContext();
@@ -21,70 +22,90 @@ const REWARD_POLICIES = {
 };
 
 export const PointProvider = ({ children }) => {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
+    const [totalPoints, setTotalPoints] = useState(0);
+    const [achievementLogs, setAchievementLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // 초기 포인트 (로그인한 사용자의 포인트 사용)
-    const [totalPoints, setTotalPoints] = useState(() => {
-        // localStorage에서 먼저 확인
-        const saved = localStorage.getItem('userTotalPoints');
-        if (saved) return parseInt(saved);
-        return 0;
-    });
-
-    // AchievementLog 시뮬레이션 (localStorage)
-    const [achievementLogs, setAchievementLogs] = useState(() => {
-        const saved = localStorage.getItem('achievementLogs');
-        return saved ? JSON.parse(saved) : [];
-    });
-
-    // 사용자가 로그인하면 포인트를 user.total_points 또는 mypoints로 설정
+    // 사용자 포인트 로드
     useEffect(() => {
-        if (user) {
-            const userPoints = user.total_points || user.mypoints || 0;
-            setTotalPoints(userPoints);
-            localStorage.setItem('userTotalPoints', userPoints.toString());
+        if (user?.member_id) {
+            fetchUserPoints();
+        } else {
+            setTotalPoints(0);
+            setAchievementLogs([]);
+            setLoading(false);
         }
-    }, [user]);
+    }, [user?.member_id]);
 
-    // totalPoints가 변경될 때마다 localStorage에 저장
-    useEffect(() => {
-        localStorage.setItem('userTotalPoints', totalPoints.toString());
-    }, [totalPoints]);
+    const fetchUserPoints = async () => {
+        if (!user?.member_id) return;
 
-    // AchievementLog 변경 시 localStorage에 저장
-    useEffect(() => {
-        localStorage.setItem('achievementLogs', JSON.stringify(achievementLogs));
-    }, [achievementLogs]);
+        try {
+            setLoading(true);
 
-    // 포인트 추가
-    const addPoints = (points, description = '포인트 획득') => {
-        setTotalPoints(prev => {
-            const newTotal = prev + points;
+            // 서버에서 포인트 조회
+            const pointsRes = await fetch(getApiUrl(`/api/points/${user.member_id}`));
+            if (pointsRes.ok) {
+                const pointsData = await pointsRes.json();
+                setTotalPoints(pointsData.total_points || 0);
+            }
 
-            // AchievementLog 생성
-            const newLog = {
-                achievement_id: achievementLogs.length + 1,
-                member_id: 1,
-                source_type: 'ETC',
-                points_earned: points,
-                points_snapshot: newTotal,
-                achieved_at: new Date().toISOString(),
-                description
-            };
-            setAchievementLogs(prev => [newLog, ...prev]);
-
-            toast.success(`${description} (+${points}P)`, {
-                icon: '🎉',
-                duration: 3000
-            });
-
-            return newTotal;
-        });
+            // 성취 로그 조회
+            const logsRes = await fetch(getApiUrl(`/api/points/achievements/${user.member_id}`));
+            if (logsRes.ok) {
+                const logsData = await logsRes.json();
+                setAchievementLogs(logsData);
+            }
+        } catch (error) {
+            console.error('포인트 로드 실패:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // 포인트 차감
-    const subtractPoints = (points) => {
+    // 포인트 추가
+    const addPoints = async (points, description = '포인트 획득') => {
+        if (!user?.member_id) {
+            toast.error('로그인이 필요합니다');
+            return;
+        }
+
+        try {
+            const response = await fetch(getApiUrl('/api/admin/add-points'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    member_id: user.member_id,
+                    points: points
+                })
+            });
+
+            if (response.ok) {
+                await fetchUserPoints();
+                await refreshUser();
+                toast.success(`${description} (+${points}P)`, {
+                    icon: '🎉',
+                    duration: 3000
+                });
+            }
+        } catch (error) {
+            console.error('포인트 추가 실패:', error);
+            toast.error('포인트 추가에 실패했습니다');
+        }
+    };
+
+    // 포인트 차감 (교환 시)
+    const subtractPoints = async (points) => {
+        // RewardShop에서 교환 API를 직접 호출하므로
+        // 여기서는 로컬 상태만 업데이트
         setTotalPoints(prev => Math.max(0, prev - points));
+
+        // 서버에서 최신 포인트 다시 가져오기
+        if (user?.member_id) {
+            await fetchUserPoints();
+            await refreshUser();
+        }
     };
 
     // 포인트 직접 설정
@@ -92,166 +113,11 @@ export const PointProvider = ({ children }) => {
         setTotalPoints(points);
     };
 
-    // 배치 보상 체크 (운동)
-    const checkExerciseBatchReward = (exerciseLogs) => {
-        const policy = REWARD_POLICIES.EXERCISE;
-        const unrewardedLogs = exerciseLogs.filter(log => !log.achievement_id);
-
-        if (unrewardedLogs.length >= policy.condition_value) {
-            const newAchievementId = achievementLogs.length + 1;
-
-            setTotalPoints(prev => {
-                const newTotal = prev + policy.points_awarded;
-
-                // AchievementLog 생성
-                const newLog = {
-                    achievement_id: newAchievementId,
-                    member_id: 1,
-                    source_type: 'EXERCISE',
-                    points_earned: policy.points_awarded,
-                    points_snapshot: newTotal,
-                    achieved_at: new Date().toISOString(),
-                    description: policy.description
-                };
-
-                setAchievementLogs(prev => [newLog, ...prev]);
-
-                toast.success(`🎉 ${policy.description}! +${policy.points_awarded}P`, {
-                    duration: 4000,
-                    style: {
-                        background: '#10b981',
-                        color: '#fff',
-                        fontWeight: 'bold'
-                    }
-                });
-
-                return newTotal;
-            });
-
-            return newAchievementId;
-        }
-        return null;
-    };
-
-    // 배치 보상 체크 (식단)
-    const checkDietBatchReward = (dietLogs) => {
-        const policy = REWARD_POLICIES.DIET;
-        const unrewardedLogs = dietLogs.filter(log => !log.achievement_id);
-
-        if (unrewardedLogs.length >= policy.condition_value) {
-            const newAchievementId = achievementLogs.length + 1;
-
-            setTotalPoints(prev => {
-                const newTotal = prev + policy.points_awarded;
-
-                const newLog = {
-                    achievement_id: newAchievementId,
-                    member_id: 1,
-                    source_type: 'DIET',
-                    points_earned: policy.points_awarded,
-                    points_snapshot: newTotal,
-                    achieved_at: new Date().toISOString(),
-                    description: policy.description
-                };
-
-                setAchievementLogs(prev => [newLog, ...prev]);
-
-                toast.success(`🎉 ${policy.description}! +${policy.points_awarded}P`, {
-                    duration: 4000,
-                    style: {
-                        background: '#10b981',
-                        color: '#fff',
-                        fontWeight: 'bold'
-                    }
-                });
-
-                return newTotal;
-            });
-
-            return newAchievementId;
-        }
-        return null;
-    };
-
-    // 배치 보상 체크 (출석)
-    const checkAttendanceBatchReward = (attendances) => {
-        const policy = REWARD_POLICIES.ATTENDANCE;
-        const unrewardedLogs = attendances.filter(log => !log.achievement_id);
-
-        if (unrewardedLogs.length >= policy.condition_value) {
-            const newAchievementId = achievementLogs.length + 1;
-
-            setTotalPoints(prev => {
-                const newTotal = prev + policy.points_awarded;
-
-                const newLog = {
-                    achievement_id: newAchievementId,
-                    member_id: 1,
-                    source_type: 'ATTENDANCE',
-                    points_earned: policy.points_awarded,
-                    points_snapshot: newTotal,
-                    achieved_at: new Date().toISOString(),
-                    description: policy.description
-                };
-
-                setAchievementLogs(prev => [newLog, ...prev]);
-
-                toast.success(`🎉 ${policy.description}! +${policy.points_awarded}P`, {
-                    duration: 4000,
-                    style: {
-                        background: '#10b981',
-                        color: '#fff',
-                        fontWeight: 'bold'
-                    }
-                });
-
-                return newTotal;
-            });
-
-            return newAchievementId;
-        }
-        return null;
-    };
-
-    // 배치 보상 체크 (목표)
-    const checkGoalBatchReward = (goals) => {
-        const policy = REWARD_POLICIES.GOAL;
-        const unrewardedGoals = goals.filter(goal => !goal.achievement_id);
-
-        if (unrewardedGoals.length >= policy.condition_value) {
-            const newAchievementId = achievementLogs.length + 1;
-
-            setTotalPoints(prev => {
-                const newTotal = prev + policy.points_awarded;
-
-                const newLog = {
-                    achievement_id: newAchievementId,
-                    member_id: 1,
-                    source_type: 'GOAL',
-                    points_earned: policy.points_awarded,
-                    points_snapshot: newTotal,
-                    achieved_at: new Date().toISOString(),
-                    description: policy.description
-                };
-
-                setAchievementLogs(prev => [newLog, ...prev]);
-
-                toast.success(`🎉 ${policy.description}! +${policy.points_awarded}P`, {
-                    duration: 4000,
-                    style: {
-                        background: '#10b981',
-                        color: '#fff',
-                        fontWeight: 'bold'
-                    }
-                });
-
-                return newTotal;
-            });
-
-            return newAchievementId;
-        }
-        return null;
-    };
+    // 배치 보상 체크 함수들은 현재 사용하지 않으므로 빈 함수로 유지
+    const checkExerciseBatchReward = () => null;
+    const checkDietBatchReward = () => null;
+    const checkAttendanceBatchReward = () => null;
+    const checkGoalBatchReward = () => null;
 
     const value = {
         totalPoints,
@@ -263,7 +129,9 @@ export const PointProvider = ({ children }) => {
         checkDietBatchReward,
         checkAttendanceBatchReward,
         checkGoalBatchReward,
-        REWARD_POLICIES
+        REWARD_POLICIES,
+        loading,
+        refreshPoints: fetchUserPoints
     };
 
     return (
