@@ -889,7 +889,10 @@ export default function MyPage() {
         const logDate = new Date(log.ate_at).toISOString().split("T")[0];
         return logDate === date;
       }),
-      health: healthRecords.filter((log) => log.measured_at === date),
+      health: healthRecords.filter((log) => {
+        const logDate = new Date(log.measured_at).toISOString().split("T")[0];
+        return logDate === date;
+      }),
     };
   };
 

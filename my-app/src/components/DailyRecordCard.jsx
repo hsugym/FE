@@ -19,7 +19,7 @@ export default function DailyRecordCard({ date, records, isDark, onClose }) {
                 }`}
         >
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                <h3 className="text-2xl font-bold text-white">
                     {date} 기록
                 </h3>
                 <motion.button
