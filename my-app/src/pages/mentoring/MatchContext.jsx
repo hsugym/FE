@@ -194,11 +194,11 @@ export function MatchProvider({ children }) {
     toast.success("멘토에게 신청이 완료되었습니다!");
   };
 
-  // ✅ 매칭 수락 (멘토/멘티 모두 사용)
-  const acceptMatch = (mentorId, menteeId) => {
+  // ✅ 매칭 수락 (멘토가 멘티의 신청을 수락)
+  const acceptMatch = (mentorUserId, menteeUserId) => {
     setMatches((prev) => {
       const updated = prev.map((m) =>
-        m.mentorId === mentorId && m.menteeId === menteeId
+        m.mentorUserId === mentorUserId && m.menteeUserId === menteeUserId
           ? { ...m, status: "active" }
           : m
       );
@@ -209,11 +209,11 @@ export function MatchProvider({ children }) {
   };
 
   // ✅ 매칭 파기
-  const terminateMatch = (mentorId, menteeId) => {
+  const terminateMatch = (mentorUserId, menteeUserId) => {
     setMatches((prev) => {
       // terminated 상태로 변경하는 대신, 배열에서 완전히 제거
       const updated = prev.filter(
-        (m) => !(m.mentorId === mentorId && m.menteeId === menteeId)
+        (m) => !(m.mentorUserId === mentorUserId && m.menteeUserId === menteeUserId)
       );
       localStorage.setItem("matches", JSON.stringify(updated));
       return updated;
